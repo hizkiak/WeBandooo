@@ -1,0 +1,1522 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Peta Lokasi - WeBandoo+</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-gesture-handling/dist/leaflet-gesture-handling.min.css">
+  <script src="https://unpkg.com/leaflet-gesture-handling"></script>
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.css" />
+  <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
+
+  <style>
+    :root {
+      --color-primary-green: #4a8645;
+      --color-white: #ffffff;
+      --color-off-white: #f0f2f5;
+      --color-text-dark: #2c3e50;
+      --color-text-grey: #7f8c8d;
+      --shadow-elevation: 0 8px 30px rgba(0, 0, 0, 0.08);
+      --color-red-danger: #e74c3c;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Poppins", sans-serif;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      padding-top: 100px;
+      min-height: 100vh;
+      background-color: var(--color-off-white);
+      display: block;
+      /* Pastikan ini block, bukan flex */
+    }
+
+    .navbar {
+      width: 100%;
+      background-color: var(--color-text-dark);
+      color: var(--color-white);
+      padding: 20px 30px;
+      box-shadow: var(--shadow-elevation);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: fixed;
+      top: 0;
+      z-index: 1100 !important;
+    }
+
+    .navbar .logo {
+      font-size: 26px;
+      font-weight: 700;
+      color: var(--color-primary-green);
+      text-decoration: none;
+    }
+
+    .nav-links {
+      display: flex;
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    .nav-links li {
+      margin-left: 20px;
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      padding: 10px 15px;
+      color: #bdc3c7;
+      text-decoration: none;
+      border-radius: 8px;
+      transition: background-color 0.3s, color 0.3s;
+      font-weight: 500;
+    }
+
+    .nav-link i {
+      margin-right: 8px;
+      font-size: 18px;
+    }
+
+    .nav-link:hover {
+      background-color: #34495e;
+      color: var(--color-white);
+    }
+
+    .nav-link.active {
+      background-color: var(--color-primary-green);
+      color: var(--color-white);
+      box-shadow: 0 4px 10px rgba(74, 134, 69, 0.4);
+    }
+
+    .navbar-right {
+      display: flex;
+      align-items: center;
+    }
+
+    .avatar {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      margin-left: 15px;
+      border: 2px solid var(--color-primary-green);
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .toggle-btn-leave {
+      background-color: var(--color-primary-green);
+      color: var(--color-white);
+      box-shadow: 0 4px 10px rgba(74, 134, 69, 0.4);
+      font-size: 15px;
+      cursor: pointer;
+      padding: 10px;
+      border-radius: 8px;
+      transition: background-color 0.3s;
+      margin-left: 15px;
+      text-decoration: none;
+    }
+
+    .toggle-btn-set {
+      background-color: var(--color-primary-green);
+      color: var(--color-white);
+      box-shadow: 0 4px 10px rgba(74, 134, 69, 0.4);
+      font-size: 15px;
+      cursor: pointer;
+      padding: 10px;
+      border-radius: 8px;
+      transition: background-color 0.3s;
+      margin-left: 15px;
+      text-decoration: none;
+    }
+
+    .main-content {
+      padding: 20px;
+      width: 100%;
+      /* Ambil lebar penuh */
+      max-width: 1400px;
+      /* Batas maksimal agar tidak terlalu lebar di monitor besar */
+      margin-left: auto;
+      margin-right: auto;
+      min-height: calc(100vh - 80px - 300px);
+      /* Memastikan konten mengisi layar sebelum footer */
+      text-align: center;
+    }
+
+    .hero-section {
+      margin-top: 50px !important;
+      width: 100%;
+      background: white;
+      padding: 40px 20px;
+      border-radius: 20px;
+      box-shadow: var(--shadow-elevation);
+      margin-bottom: 30px;
+    }
+
+    .hero-section h1 {
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+
+    .search-container {
+      display: flex;
+      background: #f8f9fa;
+      border-radius: 50px;
+      padding: 5px 20px;
+      border: 1px solid #ddd;
+      max-width: 700px;
+      /* Diperlebar sedikit agar lebih seimbang */
+      margin: 0 auto 25px;
+      align-items: center;
+    }
+
+    .search-container input {
+      flex: 1;
+      border: none;
+      background: transparent;
+      padding: 12px;
+      outline: none;
+    }
+
+    /* Kategori Tombol dengan Ikon Bulat */
+    .category-buttons {
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      flex-wrap: wrap;
+    }
+
+    .cat-btn {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: white;
+      border: 1px solid #eee;
+      padding: 8px 20px 8px 10px;
+      border-radius: 50px;
+      cursor: pointer;
+      transition: 0.3s;
+      font-weight: 500;
+    }
+
+    .cat-icon {
+      width: 35px;
+      height: 35px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+    }
+
+    .cat-btn.active {
+      background: #eef5ee;
+      border-color: var(--color-primary-green);
+      color: var(--color-primary-green);
+    }
+
+
+    /* Custom Marker Pin */
+    .marker-pin {
+      width: 40px;
+      height: 40px;
+      border-radius: 50% 50% 50% 0;
+      transform: rotate(-45deg);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border: 3px solid white;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+
+    .marker-pin i {
+      transform: rotate(45deg);
+      color: white;
+      font-size: 16px;
+    }
+
+    .header-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 40px;
+      background: var(--color-white);
+      padding: 20px 30px;
+      border-radius: 12px;
+      box-shadow: var(--shadow-elevation);
+    }
+
+    .header-bar h1 {
+      font-size: 30px;
+      font-weight: 700;
+      color: var(--color-text-dark);
+    }
+
+    .search-bar-container {
+      display: flex;
+      align-items: center;
+      margin-bottom: 40px;
+      background: var(--color-white);
+      padding: 15px 20px;
+      border-radius: 100px;
+      box-shadow: var(--shadow-elevation);
+      max-width: 1000px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .search-input {
+      flex: 1;
+      border: none;
+      outline: none;
+      font-size: 16px;
+      color: var(--color-text-dark);
+      background: transparent;
+      padding: 10px;
+      font-family: "Poppins", sans-serif;
+    }
+
+    .search-input::placeholder {
+      color: var(--color-text-grey);
+    }
+
+    .search-btn {
+      background-color: var(--color-primary-green);
+      color: var(--color-white);
+      border: none;
+      padding: 10px 15px;
+      border-radius: 8px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      font-size: 16px;
+    }
+
+    .search-btn:hover {
+      background-color: #3a6b37;
+    }
+
+    .search-btn i {
+      font-size: 16px;
+    }
+
+    .user-profile {
+      display: flex;
+      align-items: center;
+      font-weight: 600;
+      color: var(--color-text-grey);
+    }
+
+    .user-profile .avatar {
+      width: 45px;
+      height: 45px;
+      border-radius: 50%;
+      margin-left: 15px;
+      border: 2px solid var(--color-primary-green);
+      overflow: hidden;
+      cursor: pointer;
+    }
+
+    .user-profile .avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .map-area {
+      height: 600px;
+      /* Pastikan ada angka pixel yang jelas */
+      width: 100%;
+      position: relative;
+      border-radius: 20px;
+      overflow: hidden;
+    }
+
+    #map {
+      height: 100% !important;
+      width: 100% !important;
+    }
+
+    .location-preview-card {
+      position: absolute;
+      bottom: 20px;
+      right: 20px;
+      width: 300px;
+      background: white;
+      border-radius: 15px;
+      overflow: hidden;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+      z-index: 1000;
+      display: none;
+      /* Sembunyi sampai marker diklik */
+      animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+      from {
+        transform: translateY(20px);
+        opacity: 0;
+      }
+
+      to {
+        transform: translateY(0);
+        opacity: 1;
+      }
+    }
+
+    .preview-img {
+      width: 100%;
+      height: 150px;
+      object-fit: cover;
+    }
+
+    .preview-body {
+      padding: 15px;
+    }
+
+    .badge-cat {
+      font-size: 10px;
+      text-transform: uppercase;
+      padding: 3px 8px;
+      border-radius: 20px;
+      color: white;
+      font-weight: bold;
+      margin-bottom: 5px;
+      display: inline-block;
+    }
+
+    .rating-star {
+      color: #f1c40f;
+      margin-right: 5px;
+    }
+
+    .popular-tag {
+      background: #f0f2f5;
+      font-size: 11px;
+      padding: 4px 8px;
+      border-radius: 5px;
+      display: block;
+      margin-top: 10px;
+    }
+
+    /* Modal khusus lihat menu */
+    #menuModal {
+      display: none;
+      position: fixed;
+      z-index: 2000 !important;
+      /* Di atas segalanya */
+      inset: 0;
+      background: rgba(0, 0, 0, 0.9);
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    #menuModal img {
+      max-width: 90%;
+      max-height: 90vh;
+      border-radius: 10px;
+      box-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-menu-view {
+      background: #f39c12;
+      color: white;
+      border: none;
+      padding: 8px 12px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 12px;
+      margin-top: 10px;
+      width: 100%;
+      font-weight: 600;
+    }
+
+    .leaflet-bar {
+      border: none !important;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1) !important;
+    }
+
+    .leaflet-bar a {
+      background-color: #ffffff !important;
+      color: #2c3e50 !important;
+      border-bottom: 1px solid #eee !important;
+    }
+
+    .leaflet-control-custom a {
+      width: 34px;
+      height: 34px;
+      background: white;
+      cursor: pointer;
+    }
+
+    .leaflet-popup-content-wrapper {
+      border-radius: 15px;
+      padding: 5px;
+    }
+
+    .btn-dark {
+      width: 100%;
+      padding: 8px;
+      background: var(--color-primary-green);
+      color: white;
+      border-radius: 8px;
+      margin-top: 10px;
+      border: none;
+      cursor: pointer;
+    }
+
+    /* Gaya Overlay / Modal */
+    .overlay {
+      display: none;
+      /* Sembunyi secara default */
+      position: fixed;
+      z-index: 9999;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.6);
+      backdrop-filter: blur(5px);
+      justify-content: center;
+      align-items: center;
+    }
+
+    .modal-content {
+      background-color: white;
+      padding: 30px;
+      border-radius: 20px;
+      width: 90%;
+      max-width: 400px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+      text-align: center;
+    }
+
+    .modal-content h3 {
+      margin-bottom: 20px;
+      color: var(--color-primary-green);
+    }
+
+    .modal-form-input {
+      width: 100%;
+      padding: 12px 15px;
+      margin-bottom: 15px;
+      border: 1px solid #ddd;
+      border-radius: 10px;
+      font-family: 'Poppins', sans-serif;
+      outline: none;
+    }
+
+    .modal-form-input:focus {
+      border-color: var(--color-primary-green);
+    }
+
+    .filter-box {
+      background: white;
+      padding: 10px 20px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+      box-shadow: var(--shadow-elevation);
+    }
+
+    #imageViewer {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+
+    #imageViewer img {
+      max-width: 90%;
+      max-height: 90%;
+      border-radius: 12px;
+    }
+
+    .category-buttons {
+      display: flex;
+      gap: 10px;
+      margin-top: 12px;
+      flex-wrap: wrap;
+    }
+
+    .cat-btn {
+      padding: 8px 18px;
+      border-radius: 40px;
+      border: none;
+      background: #ffffff;
+      font-weight: 500;
+      cursor: pointer;
+      box-shadow: 0px 5px 10px rgba(0, 0, 0, 0.08);
+      transition: 0.25s;
+    }
+
+    .cat-btn:hover {
+      background: #e8efe6;
+      transform: translateY(-2px);
+    }
+
+    .cat-btn.active {
+      background: var(--color-primary-green);
+      color: white;
+      box-shadow: 0px 5px 15px rgba(74, 134, 69, 0.4);
+    }
+
+    /* CSS untuk tombol di Leaflet popup */
+    .btn-dark {
+      background-color: var(--color-text-dark);
+      color: var(--color-white);
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-size: 13px;
+      cursor: pointer;
+      margin-top: 5px;
+    }
+
+    .btn-dark:hover {
+      background-color: #34495e;
+    }
+
+    /* Menghilangkan warna abu-abu pada teks input rute bawah */
+    #inputRuteBawah {
+      color: #ffffff !important;
+      /* Memaksa teks yang diketik jadi putih */
+    }
+
+    /* Mengatur warna teks bantuan (placeholder) agar tidak abu-abu */
+    #inputRuteBawah::placeholder {
+      color: rgba(255, 255, 255, 0.8) !important;
+      opacity: 1;
+      /* Diperlukan untuk beberapa browser seperti Firefox */
+    }
+
+    /* Untuk browser lain (Chrome, Safari, Edge) */
+    #inputRuteBawah::-webkit-input-placeholder {
+      color: rgba(255, 255, 255, 0.8) !important;
+    }
+
+    .file-drop-area {
+      border: 2px dashed #4a8645;
+      padding: 15px;
+      text-align: center;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      cursor: pointer;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .file-drop-area.active {
+      background: rgba(74, 134, 69, 0.2);
+      border-style: solid;
+    }
+
+    .file-drop-area p {
+      font-size: 11px;
+      color: #aaa;
+      margin-bottom: 5px;
+    }
+
+    footer {
+      background-color: var(--color-text-dark);
+      color: var(--color-white);
+      padding: 50px 40px 20px;
+      margin-top: auto;
+      border-radius: 40px 40px 0 0;
+    }
+
+    .footer-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 40px;
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .footer-col h3 {
+      color: var(--color-primary-green);
+      font-size: 22px;
+      margin-bottom: 20px;
+      font-weight: 700;
+    }
+
+    .footer-col p {
+      color: #bdc3c7;
+      font-size: 14px;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+
+    .footer-col h4 {
+      font-size: 18px;
+      margin-bottom: 20px;
+      position: relative;
+      padding-bottom: 10px;
+    }
+
+    .footer-col h4::after {
+      content: "";
+      position: absolute;
+      left: 0;
+      bottom: 0;
+      width: 50px;
+      height: 2px;
+      background-color: var(--color-primary-green);
+    }
+
+    .footer-col ul {
+      list-style: none;
+    }
+
+    .footer-col ul li {
+      margin-bottom: 12px;
+    }
+
+    .footer-col ul li a {
+      color: #bdc3c7;
+      text-decoration: none;
+      transition: 0.3s;
+      font-size: 14px;
+    }
+
+    .footer-col ul li a:hover {
+      color: var(--color-primary-green);
+      padding-left: 8px;
+    }
+
+    .social-links {
+      display: flex;
+      gap: 15px;
+    }
+
+    .social-links a {
+      width: 40px;
+      height: 40px;
+      background-color: #34495e;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      color: var(--color-white);
+      text-decoration: none;
+      transition: 0.3s;
+    }
+
+    .social-links a:hover {
+      background-color: var(--color-primary-green);
+      transform: translateY(-3px);
+    }
+
+    .footer-bottom {
+      text-align: center;
+      margin-top: 50px;
+      padding-top: 20px;
+      border-top: 1px solid #34495e;
+      color: #7f8c8d;
+      font-size: 13px;
+    }
+
+    @media (max-width: 768px) {
+      .navbar {
+        flex-direction: column;
+        padding: 10px;
+      }
+
+      .nav-links {
+        flex-direction: column;
+        margin-top: 10px;
+      }
+
+      .nav-links li {
+        margin-left: 0;
+        margin-bottom: 10px;
+      }
+
+      .navbar-right {
+        margin-top: 10px;
+      }
+
+      .main-content {
+        margin-top: 150px;
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <nav class="navbar">
+    <a href="home page.html" class="logo">WeBandoo+</a>
+    <ul class="nav-links">
+      <li><a href="home page.html" class="nav-link"><i class="fas fa-chart-line"></i> Dashboard</a></li>
+      <li><a href="warisan.html" class="nav-link"><i class="fas fa-landmark"></i> Warisan & Cagar Budaya</a></li>
+      <li><a href="peta.html" class="nav-link active"><i class="fas fa-map-pin"></i> Peta Lokasi</a></li>
+      <li><a href="event.html" class="nav-link"><i class="fas fa-calendar-day"></i> Event & Jadwal</a></li>
+      <li><a href="eduction.html" class="nav-link"><i class="fas fa-book"></i> Belajar</a></li>
+    </ul>
+    <div class="navbar-right">
+      <div class="avatar"><a href="profil.html"><img src="profil.jpeg" alt="Avatar" /></a></div>
+      <a href="pengaturan.html" class="toggle-btn-leave"><i class="fas fa-cog"></i></a>
+      <a href="keluar.html" class="toggle-btn-set"><i class="fas fa-sign-out-alt"></i> Keluar</a>
+    </div>
+  </nav>
+
+  <div class="main-content">
+    <div class="hero-section">
+      <h1>Cari dan Jelajahi Lokasi Pilihanmu</h1>
+
+      <div class="search-container">
+        <input type="text" id="searchInput" placeholder="Cari warisan, event, atau lokasi...">
+        <button class="search-btn"
+          style="background:none; border:none; color:var(--color-primary-green); cursor:pointer;">
+          <i class="fas fa-search"></i>
+        </button>
+      </div>
+
+      <div class="category-wrapper">
+        <p style="font-weight: 600; font-size: 14px; margin-bottom: 15px; color: var(--color-text-grey);">Pilih Kategori
+          Lokasi:</p>
+        <div class="category-buttons">
+          <button class="cat-btn active" data-cat="all">
+            <div class="cat-icon" style="background: #4a8645;"><i class="fas fa-th-large"></i></div> Semua
+          </button>
+          <button class="cat-btn" data-cat="sejarah">
+            <div class="cat-icon" style="background: #1abc9c;"><i class="fas fa-landmark"></i></div> Situs Bersejarah
+          </button>
+          <button class="cat-btn" data-cat="ruangpublik">
+            <div class="cat-icon" style="background: #2ecc71;"><i class="fas fa-tree"></i></div> Ruang Publik
+          </button>
+          <button class="cat-btn" data-cat="kafe">
+            <div class="cat-icon" style="background: #3498db;"><i class="fas fa-coffee"></i></div> Kafe
+          </button>
+          <button class="cat-btn" data-cat="kuliner">
+            <div class="cat-icon" style="background: #e67e22;"><i class="fas fa-utensils"></i></div> Kuliner
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="map-area">
+      <div id="map"></div>
+      <div id="previewCard" class="location-preview-card"></div>
+    </div>
+
+    <div id="previewCard" class="location-preview-card">
+    </div>
+  </div>
+  </div>
+  <div id="map"></div>
+  </div>
+
+  <div style="text-align: center; margin-bottom: 50px;">
+    <button class="search-btn" id="btnBukaModalRute"
+      style="background: #4a8645; color: white; border-radius: 50px; padding: 15px 40px; border:none; cursor:pointer; font-weight:bold; font-size: 16px; box-shadow: 0 4px 15px rgba(74,134,69,0.3);">
+      <i class="fas fa-route"></i> Cari Rute Sekarang
+    </button>
+    <button id="btnHapusRute" onclick="clearRoute()"
+      style="background: #e74c3c; color: white; border-radius: 50px; padding: 15px 40px; border:none; cursor:pointer; font-weight:bold; display:none; margin-left:15px; font-size: 16px;">
+      <i class="fas fa-times"></i> Hapus Rute
+    </button>
+  </div>
+  </div>
+
+  <footer>
+    <div class="footer-container">
+      <div class="footer-col">
+        <h3>WeBandoo+</h3>
+        <p>Platform digital pelestarian cagar budaya dan warisan sejarah Kota Bandung. Menghubungkan
+          generasi muda dengan akar budaya tanah Pasundan.</p>
+        <div class="social-links">
+          <a href="#"><i class="fab fa-instagram"></i></a>
+          <a href="#"><i class="fab fa-facebook-f"></i></a>
+          <a href="#"><i class="fab fa-twitter"></i></a>
+          <a href="javascript:void(0)" id="adminTrigger" onclick="toggleAdminMode()">
+            <i class="fab fa-youtube"></i>
+          </a>
+        </div>
+      </div>
+
+      <div class="footer-col">
+        <h4>Navigasi</h4>
+        <ul>
+          <li><a href="home page.html">Dashboard Utama</a></li>
+          <li><a href="warisan.html">Daftar Warisan</a></li>
+          <li><a href="peta.html">Eksplorasi Peta</a></li>
+          <li><a href="event.html">Agenda Budaya</a></li>
+        </ul>
+      </div>
+
+      <div class="footer-col">
+        <h4>Hubungi Kami</h4>
+        <ul>
+          <li><a href="#"><i class="fas fa-map-marker-alt"></i> Jl. Telekomunikasi No.1</a>
+          </li>
+          <li><a href="#"><i class="fas fa-phone"></i> (022) 123-4567</a></li>
+          <li><a href="#"><i class="fas fa-envelope"></i> info@webandoo.id</a></li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <p>&copy; 2025 WeBandoo+ Warisan Bandung. All Rights Reserved.</p>
+    </div>
+  </footer>
+
+  <div id="locationOverlay" class="overlay">
+    <div class="modal-content">
+      <h3><i class="fas fa-route"></i> Cari Rute</h3>
+      <form id="routeForm">
+        <input type="text" id="startLoc" class="modal-form-input" placeholder="Lokasi Asal" required />
+        <input type="text" id="destLoc" class="modal-form-input" placeholder="Lokasi Tujuan" required />
+        <div style="display: flex; gap: 10px">
+          <button type="submit" class="toggle-btn-leave" style="flex: 1; margin: 0; border:none;">Cari</button>
+          <button type="button" id="closeModalBtn" class="toggle-btn-set"
+            style="flex: 1; background: #6c757d; border:none;">Tutup</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="menuModal" onclick="closeMenuModal()">
+    <span style="position:absolute; top:20px; right:30px; color:white; font-size:40px; cursor:pointer;">&times;</span>
+    <img id="imgMenuFull" src="" alt="Menu Lengkap">
+  </div>
+
+  <div id="adminModal" class="overlay" style="display: none;">
+    <div class="modal-content" style="max-width: 550px; background: #f3f3f3; color: white; border: 1px solid #444;">
+      <h3><i class="fas fa-plus-circle"></i> Tambah Lokasi Baru</h3>
+
+      <form id="adminLocationForm">
+        <input type="hidden" id="newLat">
+        <input type="hidden" id="newLng">
+
+        <select id="newCategory" class="modal-form-input" onchange="toggleFormFields()" required>
+          <option value="" disabled selected>Pilih Kategori</option>
+          <option value="kafe">Kafe</option>
+          <option value="kuliner">Kuliner</option>
+          <option value="publik">Ruang Publik</option>
+          <option value="sejarah">Situs Sejarah</option>
+        </select>
+
+        <input type="text" id="newName" class="modal-form-input" placeholder="Nama Lokasi" required>
+        <input type="text" id="newAddress" class="modal-form-input"
+          placeholder="Alamat Pasti (Contoh: Jl. Asia Afrika No. 1)" required>
+
+        <div class="file-drop-area" id="dropAreaPlace" style="border-color: #34495e;">
+          <p>Foto Tempat: Tarik file ke sini atau klik</p>
+          <input type="text" id="newImage" class="modal-form-input" placeholder="Nama file foto atau URL">
+        </div>
+
+        <textarea id="newDesc" class="modal-form-input" placeholder="Deskripsi Singkat" required></textarea>
+
+        <div id="fieldBisnis"
+          style="display: none; background: rgba(52, 152, 219, 0.1); padding: 15px; border-radius: 10px; margin-top: 10px;">
+          <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+            <input type="number" step="0.1" id="newRating" class="modal-form-input" placeholder="Rating (1-5)"
+              style="flex: 1;">
+            <input type="text" id="newPopular" class="modal-form-input" placeholder="Menu Populer" style="flex: 2;">
+          </div>
+          <div class="file-drop-area" id="dropAreaMenu" style="border-color: #3498db;">
+            <p>Foto Menu: Tarik file ke sini atau klik</p>
+            <input type="text" id="newMenuImage" class="modal-form-input" placeholder="Nama file menu atau URL">
+          </div>
+        </div>
+
+        <div id="fieldSejarah"
+          style="display: none; background: rgba(46, 204, 113, 0.1); padding: 15px; border-radius: 10px; margin-top: 10px;">
+          <textarea id="newDetails" class="modal-form-input"
+            placeholder="Detail Sejarah / Informasi Lengkap Tempat"></textarea>
+        </div>
+
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+          <button type="submit" class="toggle-btn-leave" style="flex: 1; border: none; cursor: pointer;">Simpan
+            Lokasi</button>
+          <button type="button" onclick="closeAdminModal()" class="toggle-btn-set"
+            style="flex: 1; background: #a01111; border: none; cursor: pointer;">Batal</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet-routing-machine/dist/leaflet-routing-machine.js"></script>
+  <script src="https://unpkg.com/leaflet-gesture-handling"></script>
+
+  <script>
+    const map = L.map('map', {
+      gestureHandling: true
+    }).setView([-6.9147, 107.6098], 14);
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+
+    let userLatLng = null; // Menyimpan lokasi GPS user
+    let routingControl = null;
+
+    const locations = [
+      {
+        name: "Gedung Sate",
+        category: "sejarah",
+        lat: -6.9025, lng: 107.6188,
+        icon: "fa-landmark", color: "#1abc9c",
+        image: "bdg5.jpg",
+        desc: "Ikon sejarah Jawa Barat.",
+        details: "Dibangun tahun 1920, gedung ini memiliki ciri khas ornamen tusuk sate pada menara pusatnya."
+      }
+    ];
+
+    let markers = [];
+
+    function createCustomIcon(iconClass, color) {
+      return L.divIcon({
+        className: 'custom-div-icon',
+        html: `<div class="marker-pin" style="background:${color}"><i class="fas ${iconClass}"></i></div>`,
+        iconSize: [40, 40],
+        iconAnchor: [20, 40]
+      });
+    }
+
+    function renderMarkers(filter = "all") {
+      markers.forEach(m => map.removeLayer(m));
+      markers = [];
+      locations.forEach(loc => {
+        if (filter === "all" || loc.category === filter) {
+          const m = L.marker([loc.lat, loc.lng], { icon: createCustomIcon(loc.icon, loc.color) }).addTo(map);
+          m.on('click', () => {
+            map.flyTo([loc.lat, loc.lng], 16);
+            showPreview(loc);
+          });
+          markers.push(m);
+        }
+      });
+    }
+
+    function showPreview(loc) {
+      const card = document.getElementById("previewCard");
+
+      // Logika konten tambahan berdasarkan kategori
+      let extraContent = "";
+      if (loc.category === "sejarah" || loc.category === "publik") {
+        extraContent = `<p style="font-size:11px; color:#34495e; margin-top:5px;"><b>Detail:</b> ${loc.details || '-'}</p>`;
+      } else {
+        extraContent = `
+            <div style="font-size:11px; color:#ffce00; margin-top:5px;">
+                <i class="fas fa-star"></i> ${loc.rating || '0'} | <b>Populer:</b> ${loc.popular || '-'}
+            </div>
+            <button class="btn-dark" style="width:100%; padding:8px; background:#111; color:white; border:1px solid #444; border-radius:5px; cursor:pointer; margin: 10px 0 5px 0;" onclick="openMenuModal('${loc.menuImage}')">
+                <i class="fas fa-book-open"></i> Lihat Menu & Harga
+            </button>`;
+      }
+
+      card.innerHTML = `
+        <div style="position:relative">
+            <button onclick="this.parentElement.parentElement.style.display='none'" style="position:absolute; right:10px; top:10px; background:rgba(0,0,0,0.5); border:none; color:white; border-radius:50%; width:25px; height:25px; cursor:pointer; z-index:10">×</button>
+            <img src="${loc.image}" style="width:100%; height:150px; object-fit:cover;">
+        </div>
+        <div style="padding:15px; background:#ade62a; color:white;">
+            <span style="background:${loc.color}; padding:2px 8px; border-radius:10px; font-size:10px;">${loc.category}</span>
+            <h3 style="margin:5px 0;">${loc.name}</h3>
+            <p style="font-size:12px; color:#ccc;">${loc.desc}</p>
+            ${extraContent}
+            <button class="btn-dark" style="width:100%; padding:10px; background:#4a8645; color:white; border:none; border-radius:5px; cursor:pointer; margin-top:10px;" onclick="setAsDestination('${loc.name}')">
+                <i class="fas fa-directions"></i> Petunjuk Arah
+            </button>
+        </div>`;
+      card.style.display = "block";
+    }
+
+    function showPreview(loc) {
+      const card = document.getElementById("previewCard");
+      if (!card) return;
+
+      // 1. Logika Konten Dinamis (Sejarah/Publik vs Kafe/Kuliner)
+      let dynamicContent = "";
+      if (loc.category === "sejarah" || loc.category === "publik") {
+        dynamicContent = `
+            <div style="margin-top:10px; border-top: 1px solid #444; padding-top:10px;">
+                <p style="font-size:12px; color:#34495e; line-height:1.4; text-align:left;">
+                    <b style="color:#34495e;">Detail:</b> ${loc.details || '-'}
+                </p>
+            </div>`;
+      } else {
+        dynamicContent = `
+            <div style="margin-top:8px; color:#ffce00; font-size:13px; font-weight:bold;">
+                <i class="fas fa-star"></i> ${loc.rating || '0'} 
+                <span style="color:#aaa; font-weight:normal; margin-left:5px;">
+                    | Populer: ${loc.popular || '-'}
+                </span>
+            </div>
+            <button style="width:100%; margin-top:10px; background:#ade62a; border:1px solid #ffff; color:#34495e; padding:10px; border-radius:8px; cursor:pointer; font-weight:bol" 
+                    onclick="openMenuModal('${loc.menuImage}')">
+                <i class="fas fa-book-open"></i> Lihat Menu & Harga
+            </button>`;
+      }
+
+      // 2. Tombol Hapus (Hanya muncul jika adminMode aktif)
+      let adminButtons = "";
+      if (adminMode) {
+        adminButtons = `
+            <button style="width:100%; margin-top:8px; background:#c0392b; color:white; border:none; padding:8px; border-radius:8px; font-size:11px; cursor:pointer;" 
+                    onclick="deleteLocation('${loc.name}')">
+                <i class="fas fa-trash"></i> Hapus Titik Ini
+            </button>`;
+      }
+
+      // 3. Susunan HTML dengan Warna Tema Gelap
+      card.innerHTML = `
+        <div style="position:relative;">
+            <button onclick="document.getElementById('previewCard').style.display='none'" 
+                    style="position:absolute; right:10px; top:10px; background:rgba(0,0,0,0.6); color:white; border:none; border-radius:50%; width:30px; height:30px; cursor:pointer; z-index:10;">×</button>
+            <img src="${loc.image}" onerror="this.src='https://via.placeholder.com/400x250?text=Gambar+Tidak+Ditemukan'" 
+                 style="width:100%; height:180px; object-fit:cover; border-radius: 15px 15px 0 0;">
+        </div>
+        <div style="padding:20px; background:#ffff; color:white; border-radius: 0 0 15px 15px; text-align:center; border-top:none;">
+            <span style="background:${loc.color || '#444'}; padding:3px 12px; border-radius:20px; font-size:10px; text-transform:uppercase; font-weight:bold; color:white;">
+                ${loc.category}
+            </span>
+            <h2 style="margin:12px 0 5px 0; font-size:20px; color:#34495e;">${loc.name}</h2>
+            <p style="font-size:11px; color:#34495e; margin-bottom:10px;"><i class="fas fa-map-marker-alt"></i> ${loc.address || 'Alamat tidak tersedia'}</p>
+            <p style="font-size:13px; color:#34495e; line-height:1.5;">${loc.desc || 'Tidak ada deskripsi.'}</p>
+            
+            ${dynamicContent}
+            
+            <button style="width:100%; margin-top:15px; background:#4a8645; color:white; border:none; padding:12px; border-radius:8px; font-weight:bold; cursor:pointer;" 
+                    onclick="setAsDestination('${loc.name}')"> 
+                <i class="fas fa-paper-plane"></i> Petunjuk Arah
+            </button>
+            
+            ${adminButtons}
+        </div>
+    `;
+      card.style.display = "block";
+    }
+
+    function deleteLocation(name) {
+      if (confirm("Apakah Anda yakin ingin menghapus titik '" + name + "'?")) {
+        // 1. Cari index lokasi di array
+        const index = locations.findIndex(l => l.name === name);
+        if (index > -1) {
+          // 2. Hapus dari array locations
+          locations.splice(index, 1);
+
+          // 3. Render ulang marker di peta agar titik yang dihapus hilang
+          renderMarkers();
+
+          // 4. Tutup kartu preview
+          document.getElementById('previewCard').style.display = 'none';
+          alert("Titik berhasil dihapus.");
+        }
+      }
+    }
+
+    // Fungsi pembantu untuk membersihkan dan menggambar ulang semua marker
+    function renderMarkers() {
+      // Hapus semua marker yang ada di peta saat ini
+      markers.forEach(m => map.removeLayer(m));
+      markers = [];
+
+      // Gambar ulang dari array locations yang terbaru
+      locations.forEach(loc => {
+        const m = L.marker([loc.lat, loc.lng], {
+          icon: createCustomIcon(loc.icon, loc.color)
+        }).addTo(map);
+
+        m.on('click', () => {
+          map.flyTo([loc.lat, loc.lng], 16);
+          showPreview(loc);
+        });
+        markers.push(m);
+      });
+    }
+
+    let adminMode = false;
+
+    // Fungsi untuk memproses file (mengambil nama file untuk input text)
+    function handleFileSelect(file, targetInputId) {
+      if (file) {
+        // Mengisi input text dengan nama file saja (misal: "kopi.jpg")
+        document.getElementById(targetInputId).value = file.name;
+        alert("File '" + file.name + "' berhasil terbaca. Pastikan file ada di folder project kamu.");
+      }
+    }
+
+    // Fungsi untuk mengaktifkan fitur Drag & Drop pada elemen
+    function setupDragDrop(areaId, textInputId) {
+      const dropArea = document.getElementById(areaId);
+
+      // Mencegah browser membuka file secara default
+      ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+        dropArea.addEventListener(eventName, e => e.preventDefault(), false);
+      });
+
+      // Efek visual saat file berada di atas kotak
+      dropArea.addEventListener('dragover', () => dropArea.classList.add('active'), false);
+      dropArea.addEventListener('dragleave', () => dropArea.classList.remove('active'), false);
+
+      // Saat file dilepas (Drop)
+      dropArea.addEventListener('drop', (e) => {
+        dropArea.classList.remove('active');
+        const file = e.dataTransfer.files[0];
+        handleFileSelect(file, textInputId);
+      }, false);
+
+      // Klik kotak untuk pilih file manual
+      dropArea.addEventListener('click', () => {
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.accept = 'image/*';
+        fileInput.onchange = e => handleFileSelect(e.target.files[0], textInputId);
+        fileInput.click();
+      });
+    }
+
+    function toggleAdminMode() {
+      adminMode = !adminMode;
+
+      if (adminMode) {
+        alert("MODE ADMIN AKTIF: Silakan klik pada peta untuk menambah titik lokasi baru.");
+        map.getContainer().style.cursor = "crosshair";
+        document.getElementById("adminTrigger").style.color = "#e74c3c";
+      } else {
+        alert("Mode Admin Nonaktif.");
+        map.getContainer().style.cursor = "";
+        document.getElementById("adminTrigger").style.color = "";
+      }
+    }
+
+    // Fungsi menutup modal
+    function closeAdminModal() {
+      document.getElementById("adminModal").style.display = "none";
+      document.getElementById("adminLocationForm").reset();
+    }
+
+    // --- FUNGSI TOGGLE FORM ---
+    function toggleFormFields() {
+      const cat = document.getElementById("newCategory").value;
+      const fieldBisnis = document.getElementById("fieldBisnis");
+      const fieldSejarah = document.getElementById("fieldSejarah");
+
+      if (cat === 'kafe' || cat === 'kuliner') {
+        fieldBisnis.style.display = 'block';
+        fieldSejarah.style.display = 'none';
+      } else if (cat === 'publik' || cat === 'sejarah') {
+        fieldBisnis.style.display = 'none';
+        fieldSejarah.style.display = 'block';
+      }
+    }
+
+    // --- FUNGSI DRAG & DROP ---
+    function setupDragAndDrop(areaId, inputId) {
+      const area = document.getElementById(areaId);
+      const input = document.getElementById(inputId);
+
+      ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eName => {
+        area.addEventListener(eName, e => e.preventDefault(), false);
+      });
+
+      area.addEventListener('dragover', () => area.classList.add('active'));
+      area.addEventListener('dragleave', () => area.classList.remove('active'));
+
+      area.addEventListener('drop', (e) => {
+        area.classList.remove('active');
+        const file = e.dataTransfer.files[0];
+        if (file) input.value = file.name;
+      });
+
+      area.addEventListener('click', () => {
+        const fileInput = document.createElement('input');
+        fileInput.type = 'file';
+        fileInput.onchange = e => { input.value = e.target.files[0].name; };
+        fileInput.click();
+      });
+    }
+
+    // --- KLIK PETA UNTUK TAMBAH TITIK ---
+    map.on('click', function (e) {
+      if (!adminMode) return;
+
+      document.getElementById("newLat").value = e.latlng.lat;
+      document.getElementById("newLng").value = e.latlng.lng;
+      document.getElementById("adminModal").style.display = "flex";
+
+      // Aktifkan fitur drag drop saat modal muncul
+      setupDragAndDrop("dropAreaPlace", "newImage");
+      setupDragAndDrop("dropAreaMenu", "newMenuImage");
+    });
+
+    // --- SIMPAN DATA ---
+    document.getElementById("adminLocationForm").addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const cat = document.getElementById("newCategory").value;
+      const name = document.getElementById("newName").value;
+
+      // Objek Data Dasar
+      let data = {
+        name: name,
+        category: cat,
+        address: document.getElementById("newAddress").value,
+        lat: parseFloat(document.getElementById("newLat").value),
+        lng: parseFloat(document.getElementById("newLng").value),
+        image: document.getElementById("newImage").value || "default.jpg",
+        desc: document.getElementById("newDesc").value
+      };
+
+      // Tambahan Data Berdasarkan Grup
+      if (cat === 'kafe' || cat === 'kuliner') {
+        data.rating = document.getElementById("newRating").value || "0";
+        data.popular = document.getElementById("newPopular").value || "-";
+        data.menuImage = document.getElementById("newMenuImage").value || "default_menu.jpg";
+        data.icon = (cat === 'kafe') ? "fa-coffee" : "fa-utensils";
+        data.color = (cat === 'kafe') ? "#3498db" : "#e67e22";
+      } else {
+        data.details = document.getElementById("newDetails").value || "-";
+        data.icon = (cat === 'sejarah') ? "fa-landmark" : "fa-tree";
+        data.color = (cat === 'sejarah') ? "#1abc9c" : "#2ecc71";
+      }
+
+      // Masukkan ke Array & Buat Marker
+      locations.push(data);
+      const m = L.marker([data.lat, data.lng], {
+        icon: createCustomIcon(data.icon, data.color)
+      }).addTo(map);
+
+      m.on('click', () => {
+        map.flyTo([data.lat, data.lng], 16);
+        showPreview(data);
+      });
+
+      markers.push(m);
+      closeAdminModal();
+      alert("✅ Berhasil menambahkan lokasi: " + name);
+    });
+
+    function openMenuModal(imgSrc) {
+      const modal = document.getElementById("menuModal");
+      const modalImg = document.getElementById("imgMenuFull");
+      modalImg.src = imgSrc;
+      modal.style.display = "flex";
+    }
+
+    function closeMenuModal() {
+      document.getElementById("menuModal").style.display = "none";
+    }
+
+    function drawRoute(destLat, destLng) {
+      const target = locations.find(loc => loc.name === name);
+      if (target) {
+        drawRoute(target.lat, target.lng);
+
+        document.getElementById('destLoc').value = target.name;
+      }
+
+      // CLEANUP: Hapus rute lama jika ada agar tidak menumpuk
+      if (routingControl !== null) {
+        map.removeControl(routingControl);
+        routingControl = null;
+      }
+
+      // BUAT RUTE BARU
+      routingControl = L.Routing.control({
+        // Ganti bagian waypoints di drawRoute:
+        waypoints: [
+          userLatLng ? userLatLng : L.latLng(-6.9147, 107.6098), // Gunakan GPS jika ada, jika tidak pakai titik default
+          L.latLng(destLat, destLng)
+        ],
+        lineOptions: {
+          // CUSTOM COLOR: Mengubah warna rute menjadi Hijau
+          styles: [{ color: '#4a8645', weight: 6, opacity: 0.8 }]
+        },
+        createMarker: function () { return null; } // Agar tidak ada marker default tambahan
+      }).addTo(map);
+
+      // Munculkan tombol "Hapus Rute" di UI
+      document.getElementById('btnHapusRute').style.display = 'inline-block';
+    }
+
+    // FUNGSI UTAMA UNTUK MEMBUAT RUTE
+    function setAsDestination(name) {
+      // 1. Cari data lokasi berdasarkan nama
+      const loc = locations.find(l => l.name === name);
+      if (!loc) {
+        console.error("Lokasi tidak ditemukan di database!");
+        return;
+      }
+
+      // 2. Bersihkan rute lama jika ada
+      if (routingControl !== null) {
+        map.removeControl(routingControl);
+        routingControl = null;
+      }
+
+      // 3. Gambar rute di peta
+      routingControl = L.Routing.control({
+        waypoints: [
+          // Titik A: Lokasi User (GPS) atau Pusat Bandung (Default)
+          userLatLng ? userLatLng : L.latLng(-6.9147, 107.6098),
+          // Titik B: Lokasi Tujuan
+          L.latLng(loc.lat, loc.lng)
+        ],
+        lineOptions: {
+          styles: [{ color: '#4a8645', weight: 6, opacity: 0.8 }] // Warna Hijau WeBandoo+
+        },
+        router: L.Routing.osrmv1({
+          serviceUrl: `https://router.project-osrm.org/route/v1`
+        }),
+        show: true, // Memastikan panel instruksi navigasi muncul
+        addWaypoints: false,
+        createMarker: function () { return null; }
+      }).addTo(map);
+
+      // 4. MUNCULKAN TOMBOL HAPUS RUTE (Sangat Penting)
+      const btnHapus = document.getElementById("btnHapusRute");
+      if (btnHapus) {
+        btnHapus.style.display = 'inline-block'; // Mengubah dari 'none' ke 'inline-block'
+      }
+
+      // 5. Update input di modal (opsional)
+      const destInput = document.getElementById('destLoc');
+      if (destInput) destInput.value = name;
+
+      // 6. Tutup modal overlay & scroll ke peta
+      document.getElementById("locationOverlay").style.display = 'none';
+      document.getElementById('map').scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function clearRoute() {
+      // 1. Cara Pertama: Hapus lewat variabel kontrol
+      if (routingControl !== null) {
+        map.removeControl(routingControl);
+        routingControl = null;
+      }
+
+      // 2. Cara Kedua (PENGAMAN): Cari elemen rute yang mungkin tertinggal di folder internal Leaflet
+      map.eachLayer(function (layer) {
+        if (layer._container && layer._container.classList.contains('leaflet-routing-container') ||
+          layer.options && layer.options.waypoints) {
+          map.removeLayer(layer);
+        }
+      });
+
+      // 3. Cara Ketiga: Paksa hapus panel instruksi (kotak putih navigasi) dari HTML
+      const routingPanel = document.querySelector('.leaflet-routing-container');
+      if (routingPanel) {
+        routingPanel.remove();
+      }
+
+      // 4. Sembunyikan tombol hapus rute kembali
+      const btnHapus = document.getElementById("btnHapusRute");
+      if (btnHapus) {
+        btnHapus.style.display = 'none';
+      }
+
+      // 5. Kembalikan tampilan peta ke posisi awal
+      map.flyTo([-6.9147, 107.6098], 14);
+
+      console.log("Rute berhasil dibersihkan!");
+    }
+
+    function showCard(loc) {
+      const card = document.getElementById("locationCard");
+      card.innerHTML = `
+        <img src="https://via.placeholder.com/300x150" style="width:100%">
+        <div style="padding:15px">
+          <h3 style="margin-bottom:5px">${loc.name}</h3>
+          <p style="font-size:13px; color:#666">${loc.desc}</p>
+          <button onclick="this.parentElement.parentElement.style.display='none'" style="margin-top:10px; cursor:pointer">Tutup</button>
+        </div>
+      `;
+      card.style.display = "block";
+    }
+
+    const modal = document.getElementById("locationOverlay");
+    document.getElementById("btnBukaModalRute").onclick = () => modal.style.display = "flex";
+    document.getElementById("closeModalBtn").onclick = () => modal.style.display = "none";
+
+    document.querySelectorAll(".cat-btn").forEach(btn => {
+      btn.addEventListener("click", function () {
+        document.querySelectorAll(".cat-btn").forEach(b => b.classList.remove("active"));
+        this.classList.add("active");
+        renderMarkers(this.getAttribute("data-cat"));
+      });
+    });
+
+    const locButton = L.control({ position: 'topleft' });
+
+    locButton.onAdd = function (map) {
+      const div = L.DomUtil.create('div', 'leaflet-bar leaflet-control leaflet-control-custom');
+      div.innerHTML = '<a href="#" title="Lokasi Saya" style="display:flex;align-items:center;justify-content:center;"><i class="fas fa-location-arrow"></i></a>';
+      div.onclick = function (e) {
+        e.preventDefault();
+        map.locate({ setView: true, maxZoom: 16 });
+      };
+      return div;
+    };
+    locButton.addTo(map);
+
+    map.on('locationfound', function (e) {
+      userLatLng = e.latlng; // Simpan koordinat user
+      L.marker(e.latlng).addTo(map).bindPopup("Kamu di sini!").openPopup();
+    });
+
+    document.getElementById('searchInput').addEventListener('input', function (e) {
+      const searchText = e.target.value.toLowerCase();
+
+      markers.forEach(m => map.removeLayer(m));
+      markers = [];
+
+      locations.forEach(loc => {
+        if (loc.name.toLowerCase().includes(searchText)) {
+          const m = L.marker([loc.lat, loc.lng], {
+            icon: createCustomIcon(loc.icon, loc.color)
+          }).addTo(map);
+
+          m.on('click', () => {
+            map.flyTo([loc.lat, loc.lng], 16);
+            showPreview(loc);
+          });
+
+          markers.push(m);
+        }
+      });
+    });
+
+    function clearRoute() {
+      if (routingControl !== null) {
+        map.removeControl(routingControl);
+        routingControl = null;
+      }
+    }
+
+    renderMarkers();
+    setTimeout(() => { map.invalidateSize(); }, 500);
+  </script>
+</body>
+
+</html>
